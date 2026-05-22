@@ -1,26 +1,240 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Mac App Variables ── */
+  --mac-radius:     10px; /* Radio estándar de ventanas macOS */
+  --mac-bg:         rgba(255, 255, 255, 0.95); /* Color de fondo del body de la app mac */
+  --mac-sidebar-bg: rgba(230, 230, 235, 0.4); /* Translúcido extremo */
+  --mac-topbar-bg:  rgba(255, 255, 255, 0.85); /* Topbar casi blanco */
+  
+  --sys-blue:       #007AFF;
+  --sys-green:      #28C840; /* Verde semáforo mac */
+  --sys-yellow:     #FFBD2E; /* Amarillo semáforo mac */
+  --sys-red:        #FF5F57; /* Rojo semáforo mac */
+  
+  /* ── Text Hierarchy ── */
+  --tx-primary:     #1D1D1F;
+  --tx-secondary:   rgba(0,0,0,0.5);
+  --tx-tertiary:    rgba(0,0,0,0.3);
+  
+  /* ── Separators & Controls ── */
+  --sep-mac:        rgba(0, 0, 0, 0.08); /* Borde divisor de macOS */
+  
+  /* ── macOS Buttons ── */
+  --btn-mac-bg:     linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+  --btn-mac-border: rgba(0,0,0,0.12);
+  --btn-mac-shadow: 0 1px 1px rgba(0,0,0,0.04);
+  
+  --r-mac-btn:      5px; /* Radio de los botones mac */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", sans-serif;
+  color: var(--tx-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.4;
+  overflow: hidden; /* Evitamos scroll global, solo scrollea la app interna */
 }
+
+/* ══════════════════════════════════════════════
+   ESCRITORIO VIRTUAL MAC Y VENTANA APP
+══════════════════════════════════════════════ */
+.mac-desktop {
+  width: 100vw;
+  height: 100vh;
+  /* Fondo estilo macOS Wallpaper (gradiente pastel difuso) */
+  background: radial-gradient(circle at 0% 0%, #E3E8FF 0%, transparent 40%),
+              radial-gradient(circle at 100% 0%, #FFE6EE 0%, transparent 60%),
+              radial-gradient(circle at 50% 100%, #D8FFF6 0%, transparent 80%),
+              #F2F4FB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px; /* Margen para que se note flotando */
+}
+
+.mac-app-window {
+  width: 100%;
+  max-width: 1440px;
+  height: 100%;
+  max-height: 900px;
+  background: transparent;
+  border-radius: var(--mac-radius);
+  /* Borde 1px muy sutil que rodea la app en Mac */
+  border: 1px solid rgba(0,0,0,0.15); 
+  /* Sombra voluminosa típica de ventana enfocada en macOS */
+  box-shadow: 0 25px 60px rgba(0,0,0,0.2), 0 0 1px rgba(0,0,0,0.4); 
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ══════════════════════════════════════════════
+   MATERIALS (Glassmorphism Vibrancy)
+══════════════════════════════════════════════ */
+.mac-sidebar-vibrancy {
+  background: var(--mac-sidebar-bg);
+  /* El efecto mágico de macOS */
+  backdrop-filter: blur(60px) saturate(200%);
+  -webkit-backdrop-filter: blur(60px) saturate(200%);
+  border-right: 1px solid var(--sep-mac);
+}
+
+.mac-topbar-vibrancy {
+  background: var(--mac-topbar-bg);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  border-bottom: 1px solid var(--sep-mac);
+}
+
+/* Base sólida para el main */
+.mac-main-content {
+  background: var(--mac-bg);
+}
+
+/* ══════════════════════════════════════════════
+   MAC BUTTONS & INPUTS
+══════════════════════════════════════════════ */
+.btn-mac {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--r-mac-btn);
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: all 0.1s ease;
+  outline: none;
+}
+
+/* Botón secundario mac (gris/blanco) */
+.btn-mac-secondary {
+  background: var(--btn-mac-bg);
+  border: 0.5px solid var(--btn-mac-border);
+  box-shadow: var(--btn-mac-shadow);
+  color: var(--tx-primary);
+}
+.btn-mac-secondary:active, .btn-mac-secondary:hover {
+  background: #F0F0F0;
+}
+
+/* Botón primario mac (Azul) */
+.btn-mac-primary {
+  background: linear-gradient(180deg, #1C85FF 0%, #006ADC 100%);
+  border: 0.5px solid rgba(0,0,0,0.2);
+  box-shadow: 0 1px 2px rgba(0,122,255,0.2);
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
+.btn-mac-primary:active {
+  background: #005FCA;
+}
+
+/* Ghost type mac (icono) */
+.btn-mac-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--tx-secondary);
+  padding: 4px;
+  border-radius: var(--r-mac-btn);
+}
+.btn-mac-ghost:hover {
+  background: rgba(0,0,0,0.06);
+  color: var(--tx-primary);
+}
+
+/* Mac Search Input */
+.input-mac {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  border-radius: var(--r-mac-btn);
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--tx-primary);
+  width: 100%;
+}
+.input-mac:focus {
+  border-color: var(--sys-blue);
+  outline: 3px solid rgba(0,122,255,0.2);
+}
+.input-mac::placeholder { color: var(--tx-tertiary); }
+
+
+/* ══════════════════════════════════════════════
+   MAC SIDEBAR ITEMS (Selection Blue / Gray)
+══════════════════════════════════════════════ */
+.mac-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--r-mac-btn);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tx-primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.mac-nav-item:hover {
+  background: rgba(0,0,0,0.05);
+}
+.mac-nav-item.active {
+  background: var(--sys-blue);
+  color: #fff;
+}
+.mac-nav-item.active .mac-nav-icon {
+  color: #fff;
+  stroke-width: 2.5;
+}
+.mac-nav-icon {
+  color: var(--sys-blue); /* Íconos azules estándar en mac */
+  transition: color 0.1s;
+}
+
+
+/* ══════════════════════════════════════════════
+   MAC WIDGETS
+══════════════════════════════════════════════ */
+.widget {
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03);
+  border: 1px solid var(--sep-mac);
+}
+
+.apple-list {
+  background: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  border: 1px solid var(--sep-mac);
+  overflow: hidden;
+}
+.apple-list-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--sep-mac);
+}
+.apple-list-row:last-child { border-bottom: none; }
+
+
+/* ══════════════════════════════════════════════
+   TYPOGRAPHY
+══════════════════════════════════════════════ */
+.sf-title-lg { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.sf-title-md { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.sf-num { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; }
+
+/* ══════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════ */
+.anim-enter { animation: appleEnter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes appleEnter { from { opacity: 0; } to { opacity: 1; } }

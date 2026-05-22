@@ -1,0 +1,241 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// USUARIOS Y ROLES
+// ─────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(OPERATOR)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movements StockMovement[]
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  OPERATOR
+}
+
+// ─────────────────────────────────────────────
+// CATEGORÍAS Y PRODUCTOS
+// ─────────────────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  description  String?
+  unit         String   @default("unidad")
+  currentStock Int      @default(0)
+  minStock     Int      @default(5)
+  maxStock     Int?
+  price        Float    @default(0)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  movements  StockMovement[]
+  orderItems OrderItem[]
+  alerts     Alert[]
+
+  @@map("products")
+}
+
+// ─────────────────────────────────────────────
+// DEPÓSITOS
+// ─────────────────────────────────────────────
+
+model Deposit {
+  id          String  @id @default(cuid())
+  name        String
+  location    String?
+  capacity    Int?
+  description String?
+  active      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movements StockMovement[]
+
+  @@map("deposits")
+}
+
+// ─────────────────────────────────────────────
+// PROVEEDORES
+// ─────────────────────────────────────────────
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  cuit      String?  @unique
+  email     String?
+  phone     String?
+  address   String?
+  contact   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+  orders   Order[]
+
+  @@map("suppliers")
+}
+
+// ─────────────────────────────────────────────
+// MOVIMIENTOS DE STOCK
+// ─────────────────────────────────────────────
+
+model StockMovement {
+  id          String        @id @default(cuid())
+  type        MovementType
+  quantity    Int
+  reason      String?
+  reference   String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+
+  depositId  String
+  deposit    Deposit  @relation(fields: [depositId], references: [id])
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("stock_movements")
+}
+
+enum MovementType {
+  INGRESO
+  EGRESO
+  AJUSTE
+  TRANSFERENCIA
+}
+
+// ─────────────────────────────────────────────
+// PEDIDOS
+// ─────────────────────────────────────────────
+
+model Order {
+  id          String      @id @default(cuid())
+  number      String      @unique
+  status      OrderStatus @default(PENDING)
+  notes       String?
+  expectedAt  DateTime?
+  receivedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  SENT
+  RECEIVED
+  CANCELLED
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  quantity  Int
+  unitPrice Float  @default(0)
+
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// ─────────────────────────────────────────────
+// ALERTAS
+// ─────────────────────────────────────────────
+
+model Alert {
+  id        String      @id @default(cuid())
+  type      AlertType
+  message   String
+  resolved  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  resolvedAt DateTime?
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  @@map("alerts")
+}
+
+enum AlertType {
+  LOW_STOCK
+  OUT_OF_STOCK
+  EXPIRY
+  ORDER_DELAY
+  SYSTEM
+}
+
+// ─────────────────────────────────────────────
+// AUDITORÍA
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
